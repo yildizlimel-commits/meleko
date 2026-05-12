@@ -6,13 +6,18 @@
     <title>Motosiklet Rota Günlüğüm</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #121212; color: white; text-align: center; margin: 0; padding: 20px; }
-        h1 { color: #f39c12; text-transform: uppercase; }
-        #map-container { width: 95%; max-width: 1000px; margin: auto; background: #1e1e1e; padding: 20px; border-radius: 15px; border: 1px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        svg { width: 100%; height: auto; display: block; }
-        /* ÖNEMLİ: Tüm illerin başlangıç rengi beyaz olacak */
-        path { fill: #ffffff !important; stroke: #333; stroke-width: 1; cursor: pointer; transition: 0.2s; }
-        path:hover { opacity: 0.8; stroke: #f39c12; stroke-width: 2; }
-        #info-panel { margin-top: 20px; background: #f39c12; color: #000; padding: 15px; border-radius: 50px; display: inline-flex; gap: 20px; font-weight: bold; }
+    #map-container { width: 95%; max-width: 1000px; margin: auto; background: #1e1e1e; padding: 20px; border-radius: 15px; }
+    
+    /* BURASI ÇOK KRİTİK: !important ekleyerek JavaScript'in gücünü artırıyoruz */
+    path { 
+        fill: #ffffff !important; 
+        stroke: #333 !important; 
+        stroke-width: 0.5 !important; 
+        cursor: pointer; 
+        transition: 0.2s; 
+    }
+    
+    path:hover { opacity: 0.7; fill: #f39c12 !important; }
     </style>
 </head>
 <body>
@@ -327,11 +332,18 @@
                 const kayit = JSON.parse(localStorage.getItem(isim));
                 if(kayit) il.style.fill = kayit.renk;
 
-                il.addEventListener('mouseenter', () => {
-                    document.getElementById('city-n').innerText = isim;
-                    const veri = JSON.parse(localStorage.getItem(isim));
-                    document.getElementById('date-v').innerText = veri ? veri.tarih : "Henüz Gidilmedi";
-                });
+               il.addEventListener('click', () => {
+    const tarih = prompt(isim + " ziyaret tarihin nedir?", new Date().toLocaleDateString('tr-TR'));
+    if(tarih) {
+        const rastgeleRenk = `hsl(${Math.random() * 360}, 70%, 60%)`;
+        
+        // Sadece style değiştirmek yetmeyebilir, doğrudan özniteliği hedefleyelim
+        il.style.setProperty("fill", rastgeleRenk, "important");
+        il.setAttribute("fill", rastgeleRenk); 
+        
+        localStorage.setItem(isim, JSON.stringify({renk: rastgeleRenk, tarih: tarih}));
+    }
+});
 
                 il.addEventListener('click', () => {
                     const tarih = prompt(isim + " ziyaret tarihin nedir?", new Date().toLocaleDateString('tr-TR'));
