@@ -1,6 +1,57 @@
 <!DOCTYPE html>
 <html lang="tr">
-<head>
+<head>.svg-turkiye-haritasi {
+  max-width: 1140px;
+  margin: 0 auto;
+  text-align: center;
+}
+.svg-turkiye-haritasi svg {
+  width: 100%;
+  height: auto;
+}
+.il-isimleri {
+  position: absolute;
+  z-index: 2;
+}
+.il-isimleri div {
+  font-family: 'Open Sans';
+  display: inline-block;
+  background: #222;
+  color: #fff;
+  padding: 8px 16px;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  border-radius: 4px;
+}
+
+#svg-turkiye-haritasi path {
+  cursor: pointer;
+}
+#svg-turkiye-haritasi path:hover {
+  fill: #666;
+}
+#bolge-1 g path{
+  fill:#87cdde
+}
+#bolge-2 g path{
+  fill:#ac93a7
+}
+#bolge-3 g path{
+  fill:#ffb380
+}
+#bolge-4 g path{
+  fill:#cccccc
+}
+#bolge-5 g path{
+  fill:#decd87
+}
+#bolge-6 g path{
+  fill:#de8787
+}
+#bolge-7 g path{
+  fill:#aade87
+}
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Motosiklet Rota Günlüğüm</title>
@@ -37,7 +88,6 @@
     <link href="css/svg-turkiye-haritasi.css" rel="stylesheet" />
   </head>
   <body>
-    <!-- SVG Türkiye Haritası | MIT Lisans | dnomak.com -->
     <div class="il-isimleri"></div>
     <div class="svg-turkiye-haritasi">
       <svg version="1.1" id="svg-turkiye-haritasi" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1052.3622 744.09448" xml:space="preserve">
@@ -330,7 +380,7 @@
                 
                 // Kayıtlı veriyi yükle
                 const kayit = JSON.parse(localStorage.getItem(isim));
-                if(kayit) il.style.fill = kayit.renk;
+                if(kayit) il..fill = kayit.renk;
 
                il.addEventListener('click', () => {
     const tarih = prompt(isim + " ziyaret tarihin nedir?", new Date().toLocaleDateString('tr-TR'));
@@ -357,6 +407,57 @@
         }
         // Sayfa hazır olduğunda çalıştır
         setTimeout(baslat, 500); 
-    </script>
+   function svgturkiyeharitasi() {
+  const element = document.querySelector('#svg-turkiye-haritasi');
+  const info = document.querySelector('.il-isimleri');
+
+  element.addEventListener(
+    'mouseover',
+    function (event) {
+      if (event.target.tagName === 'path') {
+        info.innerHTML = [
+          '<div>',
+          event.target.parentNode.getAttribute('data-iladi'),
+          '</div>'
+        ].join('');
+      }
+    }
+  );
+
+  element.addEventListener(
+    'mousemove',
+    function (event) {
+      info.style.top = event.pageY + 25 + 'px';
+      info.style.left = event.pageX + 'px';
+    }
+  );
+
+  element.addEventListener(
+    'mouseout',
+    function (event) {
+      info.innerHTML = '';
+    }
+  );
+
+  element.addEventListener(
+    'click',
+    function (event) {
+      if (event.target.tagName === 'path') {
+        const parent = event.target.parentNode;
+        const id = parent.getAttribute('id');
+
+        window.location.href = (
+          '#'
+          + id
+          + '-'
+          + parent.getAttribute('data-plakakodu')
+        );
+      }
+    }
+  );
+}
+
+svgturkiyeharitasi();
+ </script>
 </body>
 </html>
