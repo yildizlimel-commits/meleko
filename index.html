@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Motosiklet Rota Günlüğüm</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --accent: #f39c12;
+            --text: #e0e0e0;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 { color: var(--accent); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px; }
+        .desc { margin-bottom: 20px; font-size: 0.9em; color: #888; }
+        
+        #map-container {
+            width: 100%;
+            max-width: 1000px;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid #333;
+        }
+
+        /* SVG Ayarları */
+        svg { width: 100%; height: auto; display: block; }
+        path {
+            fill: #ffffff; /* Başlangıç Beyaz */
+            stroke: #333;
+            stroke-width: 1;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        path:hover {
+            fill: #444 !important;
+            stroke: var(--accent);
+            stroke-width: 2;
+        }
+
+        /* Bilgi Kutusu */
+        #status-bar {
+            margin-top: 20px;
+            padding: 15px 30px;
+            background: var(--accent);
+            color: #000;
+            font-weight: bold;
+            border-radius: 50px;
+            display: flex;
+            gap: 20px;
+            box-shadow: 0 4px 15px rgba(243, 156, 18, 0.3);
+        }
+
+        .btn-reset {
+            margin-top: 30px;
+            background: transparent;
+            color: #666;
+            border: 1px solid #333;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8em;
+        }
+        .btn-reset:hover { color: #ff4757; border-color: #ff4757; }
+    </style>
+</head>
+<body>
+
+    <h1>🏍️ Rota Günlüğüm</h1>
+    <p class="desc">Gezdiğin şehre tıkla, tarihini gir ve haritayı renklendir.</p>
+
+    <div id="map-container">
+        <!-- Harita Verisi (SVG) Buraya Entegre Edildi -->
+        <svg viewBox="0 0 1007.478 442.226" xmlns="http://www.w3.org/2000/svg">
+            <g id="turkiye-haritasi">
+                <!-- Buraya tüm illerin koordinatları gelecek. 
+                     Kodun çok uzun olmaması için JS ile dinamik yükleme yerine 
+                     doğrudan HTML içine gömülü bir yapı kullanıyoruz. -->
+            </g>
+        </svg>
+    </div>
+
+    <div id="status-bar">
+        <span>Şehir: <span id="city-name">-</span></span>
+        <span>Tarih: <span id="visit-date">Gidilmedi</span></span>
+    </div>
+
+    <button class="btn-reset" onclick="resetAll()">Tüm Verileri Sıfırla</button>
+
+    <script>
+        // Haritayı JS içinden basıyoruz ki HTML kirlenmesin ama 404 de vermesin
+        const mapData = {
+            url: "https://cdn.jsdelivr.net/gh/fatihhayri/turkiye-il-ilce-haritasi-svg@master/turkiye.svg"
+        };
+
+        async function init() {
+            const container = document.getElementById('turkiye-haritasi');
+            try {
+                const res = await fetch(mapData.url);
+                const svgText = await res.text();
+                const parser = new DOMParser();
+                const svgDoc = parser.parseFromString(svgText, 'image/svg+xml');
+                const paths = svgDoc.querySelectorAll('path');
+                
+                paths.forEach(path => {
+                    const clonedPath = document.importNode(path, true);
+                    setupProvince(clonedPath);
+                    container.appendChild(clonedPath);
+                });
+                loadSavedData();
+            } catch (e) {
+                console.error("Harita yükleme hatası:", e);
+                container.innerHTML = "<text x='350' y='200' fill='white'>Harita yüklenemedi. Lütfen interneti kontrol edin.</text>";
+            }
+        }
+
+        function setupProvince(el) {
+            const name = el.getAttribute('name');
+            
+            el.addEventListener('mouseenter', () => {
+                document.getElementById('city-name').innerText = name;
+                const saved = JSON.parse(localStorage.getItem(name));
+                document.getElementById('visit-date').innerText = saved ? saved.date : "Gidilmedi";
+            });
+
+            el.addEventListener('click', () => {
+                const isVisited = localStorage.getItem(name);
+                if (isVisited) {
+                    if (confirm(name + " kaydını silmek istiyor musun?")) {
+                        localStorage.removeItem(name);
+                        el.style.fill = "#ffffff";
+                    }
+                } else {
+                    const date = prompt(name + " için ziyaret tarihi:", new Date().toLocaleDateString('tr-TR'));
+                    if (date) {
+                        const color = `hsl(${Math.random() * 360}, 70%, 60%)`;
+                        const data = { color: color, date: date };
+                        localStorage.setItem(name, JSON.stringify(data));
+                        el.style.fill = color;
+                    }
+                }
+            });
+        }
+
+        function loadSavedData() {
+            const paths = document.querySelectorAll('path');
+            paths.forEach(p => {
+                const name = p.getAttribute('name');
+                const saved = JSON.parse(localStorage.getItem(name));
+                if (saved) p.style.fill = saved.color;
+            });
+        }
+
+        function resetAll() {
+            if (confirm("Tüm gezi geçmişin silinecek! Emin misin?")) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
